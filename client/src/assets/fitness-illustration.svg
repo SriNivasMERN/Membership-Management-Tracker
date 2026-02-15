@@ -1,0 +1,57 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 900" role="img" aria-label="Fitness training illustration">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f1622"/>
+      <stop offset="100%" stop-color="#1a2636"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6aa4ff"/>
+      <stop offset="100%" stop-color="#79f2d0"/>
+    </linearGradient>
+    <linearGradient id="accentSoft" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="rgba(106, 164, 255, 0.35)"/>
+      <stop offset="100%" stop-color="rgba(121, 242, 208, 0.35)"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="rgba(106, 164, 255, 0.25)"/>
+      <stop offset="100%" stop-color="rgba(15, 22, 34, 0)"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="640" height="900" rx="32" fill="url(#bg)"/>
+  <rect width="640" height="900" rx="32" fill="url(#glow)"/>
+
+  <g opacity="0.35" fill="none" stroke="rgba(255,255,255,0.12)">
+    <path d="M80 720h480"/>
+    <path d="M120 680h400"/>
+    <path d="M160 640h320"/>
+  </g>
+
+  <g fill="none" stroke="url(#accent)" stroke-width="10" stroke-linecap="round">
+    <path d="M140 280c40-40 90-60 150-60s110 20 150 60"/>
+    <path d="M160 340c30-30 70-45 130-45s100 15 130 45"/>
+  </g>
+
+  <g transform="translate(80 360)">
+    <rect x="0" y="120" width="80" height="160" rx="16" fill="url(#accent)"/>
+    <rect x="80" y="150" width="40" height="100" rx="12" fill="url(#accentSoft)" stroke="rgba(255,255,255,0.25)"/>
+    <rect x="120" y="188" width="240" height="24" rx="12" fill="url(#accent)"/>
+    <rect x="360" y="150" width="40" height="100" rx="12" fill="url(#accentSoft)" stroke="rgba(255,255,255,0.25)"/>
+    <rect x="400" y="120" width="80" height="160" rx="16" fill="url(#accent)"/>
+  </g>
+
+  <g transform="translate(130 520)">
+    <path d="M180 0c-40 0-72 32-72 72s32 72 72 72 72-32 72-72S220 0 180 0z" fill="rgba(121, 242, 208, 0.12)"/>
+    <path d="M140 120c20 18 46 28 80 28s60-10 80-28" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="6" stroke-linecap="round"/>
+    <path d="M156 110c16 12 36 18 64 18s48-6 64-18" fill="none" stroke="rgba(106,164,255,0.4)" stroke-width="5" stroke-linecap="round"/>
+  </g>
+
+  <g transform="translate(140 620)">
+    <rect x="0" y="0" width="360" height="200" rx="24" fill="rgba(22, 32, 48, 0.7)" stroke="rgba(255,255,255,0.12)"/>
+    <path d="M40 40h120" stroke="rgba(255,255,255,0.25)" stroke-width="6" stroke-linecap="round"/>
+    <path d="M40 80h200" stroke="rgba(255,255,255,0.2)" stroke-width="6" stroke-linecap="round"/>
+    <path d="M40 120h160" stroke="rgba(255,255,255,0.18)" stroke-width="6" stroke-linecap="round"/>
+    <path d="M40 160h220" stroke="rgba(255,255,255,0.16)" stroke-width="6" stroke-linecap="round"/>
+    <rect x="260" y="44" width="70" height="70" rx="14" fill="url(#accent)" opacity="0.85"/>
+  </g>
+</svg>
