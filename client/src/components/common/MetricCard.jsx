@@ -13,7 +13,7 @@ function MetricCard({ title, subtitle, value, icon: Icon, tone, loading = false 
         minHeight: 120,
         borderRadius: 2,
         background: `linear-gradient(155deg, ${theme.palette.background.paper} 0%, ${alpha(theme.palette.primary.main, 0.06)} 100%)`,
-        border: `1px solid ${alpha(theme.palette.text.primary, 0.18)}`,
+        border: `2px solid ${alpha(theme.palette.text.primary, 0.26)}`,
         boxShadow: '0 12px 24px rgba(15, 23, 42, 0.1)',
         display: 'flex',
         alignItems: 'center',
@@ -36,7 +36,7 @@ function MetricCard({ title, subtitle, value, icon: Icon, tone, loading = false 
           pointerEvents: 'none',
         },
         '&:hover': {
-          animation: 'hoverZoomOutIn 3s ease-in-out infinite',
+          animation: 'hoverZoomOutIn 450ms ease-in-out',
           boxShadow: '0 18px 30px rgba(15, 23, 42, 0.14)',
         },
         '@media (prefers-reduced-motion: reduce)': {

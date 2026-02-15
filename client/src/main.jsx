@@ -169,8 +169,8 @@ const theme = createTheme({
       styleOverrides: {
         '@keyframes hoverZoomOutIn': {
           '0%': { transform: 'scale(1)' },
-          '35%': { transform: 'scale(0.9)' },
-          '65%': { transform: 'scale(0.9)' },
+          '40%': { transform: 'scale(0.94)' },
+          '70%': { transform: 'scale(0.97)' },
           '100%': { transform: 'scale(1)' },
         },
         body: {

@@ -21,7 +21,7 @@ import {
   Chip,
   Skeleton,
 } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import CloseIcon from '@mui/icons-material/Close';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
@@ -139,10 +139,10 @@ function DashboardPage() {
     p: 2.25,
     borderRadius: 2,
     background: theme.palette.background.paper,
-    border: `1px solid ${theme.palette.divider}`,
+    border: `2px solid ${alpha(theme.palette.text.primary, 0.18)}`,
     boxShadow: '0 6px 18px rgba(0, 0, 0, 0.08)',
     '&:hover': {
-      animation: 'hoverZoomOutIn 3s ease-in-out infinite',
+      animation: 'hoverZoomOutIn 450ms ease-in-out',
       boxShadow: '0 12px 24px rgba(15, 23, 42, 0.12)',
     },
     '@media (prefers-reduced-motion: reduce)': {
@@ -546,6 +546,7 @@ function DashboardPage() {
             <Table size="small">
               <TableHead>
                 <TableRow>
+                  <TableCell>S.No</TableCell>
                   <TableCell>Name</TableCell>
                   <TableCell>Mobile</TableCell>
                   <TableCell>{settings?.planLabel || 'Plan'}</TableCell>
@@ -556,8 +557,9 @@ function DashboardPage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {members.map((member) => (
+                {members.map((member, index) => (
                   <TableRow key={member._id} hover>
+                    <TableCell>{membersPage * membersRowsPerPage + index + 1}</TableCell>
                     <TableCell>{member.name}</TableCell>
                     <TableCell>{member.mobile}</TableCell>
                     <TableCell>{member.planSnapshot?.planName}</TableCell>
@@ -569,14 +571,14 @@ function DashboardPage() {
                 ))}
                 {!membersLoading && members.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={7} align="center">
+                    <TableCell colSpan={8} align="center">
                       No {memberLabel.toLowerCase()}s found.
                     </TableCell>
                   </TableRow>
                 )}
                 {membersLoading && (
                   <TableRow>
-                    <TableCell colSpan={7} align="center">
+                    <TableCell colSpan={8} align="center">
                       Loading...
                     </TableCell>
                   </TableRow>
