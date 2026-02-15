@@ -42,6 +42,7 @@ function MainLayout({ children, appearance = 'conservative' }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [drawerCollapsed, setDrawerCollapsed] = React.useState(false);
   const [logoError, setLogoError] = React.useState(false);
+  const [menuImageError, setMenuImageError] = React.useState(false);
   const [fallbackImageError, setFallbackImageError] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -51,6 +52,9 @@ function MainLayout({ children, appearance = 'conservative' }) {
   React.useEffect(() => {
     setLogoError(false);
   }, [settings?.logoUrl]);
+  React.useEffect(() => {
+    setMenuImageError(false);
+  }, [settings?.menuImageUrl]);
 
   const handleDrawerToggle = () => {
     setMobileOpen((prev) => !prev);
@@ -62,6 +66,9 @@ function MainLayout({ children, appearance = 'conservative' }) {
   const businessName =
     loading || !settings ? 'Membership Management Tracker' : settings.businessName;
   const logoUrl = settings?.logoUrl;
+  const menuImageUrl = settings?.menuImageUrl;
+  const defaultMenuImageUrl =
+    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQoPeJ--akqtKBkCxznw9SxWHQ0JTADOiX0Hg&s';
   const branchName = loading || !settings ? 'Main Branch' : settings.branchName || 'Main Branch';
   const appearanceTokens =
     appearance === 'energetic'
@@ -240,7 +247,7 @@ function MainLayout({ children, appearance = 'conservative' }) {
         <Box
           sx={{
             height: 44,
-            width: 44,
+            width: 72,
             borderRadius: 1.5,
             overflow: 'hidden',
             flexShrink: 0,
@@ -257,7 +264,14 @@ function MainLayout({ children, appearance = 'conservative' }) {
               src={logoUrl}
               alt={businessName}
               onError={() => setLogoError(true)}
-              sx={{ width: '100%', height: '100%', objectFit: 'contain', p: 0.5 }}
+              sx={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                objectPosition: 'center',
+                transform: 'scale(1.35)',
+                transformOrigin: 'center',
+              }}
             />
           ) : !fallbackImageError ? (
             <Box
@@ -272,7 +286,13 @@ function MainLayout({ children, appearance = 'conservative' }) {
               component="img"
               src={fitnessIllustration}
               alt="Fitness fallback logo"
-              sx={{ width: '100%', height: '100%', objectFit: 'contain', p: 0.5 }}
+              sx={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+                transform: 'scale(1.08)',
+                transformOrigin: 'center',
+              }}
             />
           )}
         </Box>
@@ -440,24 +460,28 @@ function MainLayout({ children, appearance = 'conservative' }) {
           mt: 'auto',
           px: 2,
           pb: 3,
-          flexGrow: 1,
+          flexGrow: 0,
           display: 'flex',
-          alignItems: 'flex-end',
+          alignItems: 'flex-start',
           justifyContent: 'center',
-          minHeight: 260,
+          height: 300,
+          pt: 1,
         }}
       >
         {!drawerCollapsed && (
           <Box
             component="img"
-            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQoPeJ--akqtKBkCxznw9SxWHQ0JTADOiX0Hg&s"
+            src={menuImageUrl && !menuImageError ? menuImageUrl : defaultMenuImageUrl}
             alt="Wellness illustration"
+            onError={() => setMenuImageError(true)}
             sx={{
               width: '100%',
               height: '100%',
               maxWidth: 220,
-              maxHeight: '100%',
+              maxHeight: 300,
               objectFit: 'cover',
+              objectPosition: 'top center',
+              transform: 'translateY(-20%)',
               borderRadius: 3,
               opacity: 0.95,
               border: `1px solid ${appearanceTokens.surfaceBorder}`,
@@ -533,7 +557,13 @@ function MainLayout({ children, appearance = 'conservative' }) {
           },
         }}
       >
-        <Toolbar sx={{ position: 'relative' }}>
+        <Toolbar
+          sx={{
+            position: 'relative',
+            minHeight: { xs: 72, sm: 64 },
+            pl: isMobile ? 7 : undefined,
+          }}
+        >
           {isMobile && (
             <IconButton
               color="inherit"
@@ -542,6 +572,7 @@ function MainLayout({ children, appearance = 'conservative' }) {
               sx={{
                 position: 'absolute',
                 left: 8,
+                zIndex: 3,
                 color: appearanceTokens.navDefault,
                 background: appearanceTokens.surface,
                 border: `1px solid ${appearanceTokens.surfaceBorder}`,
@@ -557,7 +588,7 @@ function MainLayout({ children, appearance = 'conservative' }) {
           )}
           <Box
             sx={{
-              display: 'flex',
+              display: { xs: 'none', sm: 'flex' },
               alignItems: 'center',
               gap: 1,
               px: 1.5,
@@ -580,11 +611,37 @@ function MainLayout({ children, appearance = 'conservative' }) {
               justifyContent: 'center',
               alignItems: 'center',
               px: 1,
+              pt: { xs: 1, sm: 0 },
             }}
           >
-            <BusinessBrand />
+            {isMobile ? (
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 800,
+                  color: appearanceTokens.textPrimary,
+                  fontSize: '0.95rem',
+                  textAlign: 'center',
+                  maxWidth: '58vw',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {businessName}
+              </Typography>
+            ) : (
+              <BusinessBrand />
+            )}
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pr: 1 }}>
+          <Box
+            sx={{
+              display: { xs: 'none', sm: 'flex' },
+              alignItems: 'center',
+              gap: 1,
+              pr: 1,
+            }}
+          >
             <IconButton
               color="inherit"
               aria-label="Profile"

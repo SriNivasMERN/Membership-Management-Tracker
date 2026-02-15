@@ -135,17 +135,24 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           transition: 'background-color 140ms ease, box-shadow 160ms ease',
+          '& .MuiTableCell-body': {
+            transition:
+              'background-color 160ms ease, color 160ms ease, transform 260ms cubic-bezier(0.4, 0, 0.2, 1)',
+          },
+          '&:nth-of-type(odd) .MuiTableCell-body': {
+            backgroundColor: alpha('#5f7a61', 0.035),
+          },
           '&.MuiTableRow-hover:hover': {
-            animation: 'none',
-            backgroundColor: 'rgba(15, 118, 110, 0.16)',
-            boxShadow: '0 0 0 1px rgba(15, 118, 110, 0.42), 0 0 26px rgba(15, 118, 110, 0.34)',
+            backgroundColor: alpha('#0f766e', 0.16),
+            boxShadow: `0 0 0 1px ${alpha('#0f766e', 0.36)}, 0 8px 18px ${alpha('#0f766e', 0.22)}`,
           },
           '&.MuiTableRow-hover:hover .MuiTableCell-root': {
             color: '#111827',
-            backgroundColor: 'rgba(15, 118, 110, 0.16)',
+            backgroundColor: alpha('#0f766e', 0.14),
             fontWeight: 700,
-            borderTop: '1px solid rgba(15, 118, 110, 0.45)',
-            borderBottom: '1px solid rgba(15, 118, 110, 0.45)',
+            borderTop: `1px solid ${alpha('#0f766e', 0.45)}`,
+            borderBottom: `1px solid ${alpha('#0f766e', 0.45)}`,
+            animation: 'tableRowZoomPulse 420ms ease-in-out',
           },
           '&.MuiTableRow-hover:hover .MuiTableCell-root:first-of-type': {
             borderLeft: '4px solid #0f766e',
@@ -158,7 +165,13 @@ const theme = createTheme({
             borderBottomRightRadius: 8,
           },
           '@media (prefers-reduced-motion: reduce)': {
+            '& .MuiTableCell-body': {
+              transition: 'background-color 160ms ease, color 160ms ease',
+            },
             '&.MuiTableRow-hover:hover': {
+              animation: 'none',
+            },
+            '&.MuiTableRow-hover:hover .MuiTableCell-root': {
               animation: 'none',
             },
           },
@@ -167,6 +180,12 @@ const theme = createTheme({
     },
     MuiCssBaseline: {
       styleOverrides: {
+        '@keyframes tableRowZoomPulse': {
+          '0%': { transform: 'scale(1)' },
+          '40%': { transform: 'scale(0.97)' },
+          '70%': { transform: 'scale(0.985)' },
+          '100%': { transform: 'scale(1)' },
+        },
         '@keyframes hoverZoomOutIn': {
           '0%': { transform: 'scale(1)' },
           '40%': { transform: 'scale(0.94)' },

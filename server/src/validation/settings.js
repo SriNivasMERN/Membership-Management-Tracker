@@ -2,11 +2,31 @@ import { z } from 'zod';
 
 export const pricingModeEnum = z.enum(['PLAN_ONLY', 'PLAN_PLUS_SLOT_MULTIPLIER']);
 
+const imageValueSchema = z
+  .string()
+  .refine(
+    (value) => {
+      if (!value) return true;
+      if (z.string().url().safeParse(value).success) return true;
+      return value.startsWith('data:image/');
+    },
+    'Must be a valid image URL or uploaded image data'
+  )
+  .refine(
+    (value) => {
+      if (!value) return true;
+      if (!value.startsWith('data:image/')) return true;
+      return value.length <= 350000;
+    },
+    'Uploaded image is too large'
+  );
+
 export const settingsSchema = z.object({
   businessName: z.string().min(1),
   businessType: z.string().min(1),
   branchName: z.string().min(1),
-  logoUrl: z.string().url().optional().or(z.literal('')),
+  logoUrl: imageValueSchema.optional().or(z.literal('')),
+  menuImageUrl: imageValueSchema.optional().or(z.literal('')),
   contactPhone: z.string().optional(),
   memberLabel: z.string().min(1),
   planLabel: z.string().min(1),

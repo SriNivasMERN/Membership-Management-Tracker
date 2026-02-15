@@ -13,8 +13,8 @@ import { ensureDefaultSettings, seedDefaultPlans, seedDefaultSlots } from './uti
 const app = express();
 
 // Basic middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
 const clientOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
 app.use(

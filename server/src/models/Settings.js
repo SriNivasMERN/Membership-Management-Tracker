@@ -6,6 +6,7 @@ const settingsSchema = new mongoose.Schema(
     businessType: { type: String, required: true, default: 'Gym' },
     branchName: { type: String, required: true, default: 'Main Branch' },
     logoUrl: { type: String },
+    menuImageUrl: { type: String },
     contactPhone: { type: String },
     memberLabel: { type: String, required: true, default: 'Member' },
     planLabel: { type: String, required: true, default: 'Plan' },
