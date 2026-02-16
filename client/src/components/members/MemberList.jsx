@@ -22,10 +22,12 @@ import SearchIcon from '@mui/icons-material/Search';
 import dayjs from 'dayjs';
 import api from '../../api/axiosClient.js';
 import { useSettings } from '../../context/SettingsContext.jsx';
+import { useAuth } from '../../context/AuthContext.jsx';
 import MemberFormDialog from './MemberFormDialog.jsx';
 
 function MemberList() {
   const { settings } = useSettings();
+  const { user } = useAuth();
   const [members, setMembers] = useState([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -93,6 +95,7 @@ function MemberList() {
   };
 
   const memberLabel = settings?.memberLabel || 'Member';
+  const canWriteMembers = user?.role === 'ADMIN' || user?.role === 'STAFF';
 
   const getStatusChip = (member) => {
     const today = dayjs().startOf('day');
@@ -122,12 +125,14 @@ function MemberList() {
           }}
         />
         <Box sx={{ flexGrow: 1 }} />
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={openCreate}
-          size="small"
-        >{`Add ${memberLabel}`}</Button>
+        {canWriteMembers ? (
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={openCreate}
+            size="small"
+          >{`Add ${memberLabel}`}</Button>
+        ) : null}
       </Box>
 
       <Paper>
@@ -144,7 +149,7 @@ function MemberList() {
                 <TableCell>End</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Fully Paid</TableCell>
-                <TableCell align="right">Actions</TableCell>
+                {canWriteMembers ? <TableCell align="right">Actions</TableCell> : null}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -165,23 +170,25 @@ function MemberList() {
                       <Chip label="No" size="small" />
                     )}
                   </TableCell>
-                  <TableCell align="right">
-                    <Tooltip title="Edit">
-                      <IconButton size="small" onClick={() => openEdit(member)}>
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Delete">
-                      <IconButton size="small" onClick={() => handleDelete(member)}>
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
+                  {canWriteMembers ? (
+                    <TableCell align="right">
+                      <Tooltip title="Edit">
+                        <IconButton size="small" onClick={() => openEdit(member)}>
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete">
+                        <IconButton size="small" onClick={() => handleDelete(member)}>
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  ) : null}
                 </TableRow>
               ))}
               {!loading && members.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={10} align="center">
+                  <TableCell colSpan={canWriteMembers ? 10 : 9} align="center">
                     No members found.
                   </TableCell>
                 </TableRow>
@@ -200,12 +207,14 @@ function MemberList() {
         />
       </Paper>
 
-      <MemberFormDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        initialData={editingMember}
-        onSaved={handleSaved}
-      />
+      {canWriteMembers ? (
+        <MemberFormDialog
+          open={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          initialData={editingMember}
+          onSaved={handleSaved}
+        />
+      ) : null}
     </Box>
   );
 }

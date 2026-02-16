@@ -830,3 +830,160 @@ Single page with tabs:
   - Optional: enforce unique `mobile` per member. If enforced, server returns 409 on duplicates.
 
 ---
+
+## 13. Authentication and Roles
+
+### 13.1 Goal and Scope
+
+- **Current state (v1):** The app currently works fully **without login** and all users share the same access.
+- **New state (v2):** Introduce secure authentication, users, and role-based access control (RBAC) in phases, with backward-safe rollout.
+- **Goal:** Protect data and actions by authenticated identity and role, without redesigning existing business workflows/pages.
+
+### 13.2 In Scope and Out of Scope
+
+- **In scope**
+  - Login/logout with secure sessions.
+  - Admin-managed users and roles.
+  - RBAC enforcement on backend (source of truth) and frontend route/action visibility.
+  - Access + refresh token strategy with rotation and reuse detection.
+  - CSRF protection for cookie-based auth endpoints.
+  - Audit logging for critical actions.
+  - Rate limiting and brute-force protection for login.
+  - Security hardening: helmet, strict CORS, secure cookies, strict validation.
+- **Out of scope (Phase 2 / future)**
+  - Forgot password / email OTP reset.
+  - Email verification.
+  - 2FA.
+  - Multi-tenant business accounts.
+
+### 13.3 Roles and Permissions Matrix
+
+| Module / Action | ADMIN | STAFF | VIEWER |
+|---|---|---|---|
+| Dashboard (read) | Yes | Yes | Yes |
+| Members (list/search/get) | Yes | Yes | Yes |
+| Members (create/update/delete) | Yes | Yes | No |
+| Settings | Yes | No | No |
+| Plans | Yes | No | No |
+| Slots | Yes | No | No |
+| Pricing Rules | Yes | No | No |
+| Users management | Yes | No | No |
+| Audit log view | Yes | No | No |
+
+### 13.4 Screen List Impacted
+
+- Existing screens wrapped with auth:
+  - Dashboard
+  - Members
+  - Configuration
+- New screens:
+  - Login
+  - Change Password (forced when `mustChangePassword === true`)
+  - Users (ADMIN only)
+  - Access Denied
+
+### 13.5 API List Impacted
+
+- **New APIs**
+  - `POST /api/auth/login`
+  - `POST /api/auth/logout` (CSRF protected)
+  - `POST /api/auth/refresh` (CSRF protected)
+  - `GET /api/auth/me`
+  - `POST /api/auth/change-password`
+  - `GET /api/users` (ADMIN)
+  - `POST /api/users` (ADMIN)
+  - `PUT /api/users/:id` (ADMIN)
+  - `PATCH /api/users/:id/deactivate` (ADMIN)
+  - `POST /api/users/:id/reset-password` (ADMIN)
+  - `GET /api/audit-logs` (ADMIN, paginated)
+- **Existing APIs updated**
+  - All existing module routes require authentication.
+  - Role permissions are applied per module/action.
+
+### 13.6 Data Model Changes
+
+- **`users` collection**
+  - `name`, `email` (unique, required), `mobile` (optional), `passwordHash`
+  - `role` enum (`ADMIN`, `STAFF`, `VIEWER`)
+  - `isActive` (bool), `mustChangePassword` (bool)
+  - `lastLoginAt`, `failedLoginCount`, `lockUntil`, `tokenVersion`
+  - timestamps
+- **`userSessions` collection**
+  - `userId`, `sessionId`, `refreshTokenHash`
+  - `createdAt`, `expiresAt`, `revokedAt`, `lastUsedAt`
+  - `ipAddress`, `userAgent`
+- **`auditLogs` collection**
+  - `actorUserId`, `actorRole`, `actionType`, `entityType`, `entityId`
+  - `before`, `after`, `ipAddress`, `userAgent`, `createdAt`
+
+### 13.7 Security Controls (Frontend + Backend)
+
+- **Backend**
+  - JWT access token (15m) + refresh token (14d).
+  - Refresh token in `httpOnly` secure cookie, rotation, reuse detection, per-session persistence.
+  - CSRF double-submit token (`XSRF-TOKEN` cookie + `X-CSRF-Token` header).
+  - Role middleware: authenticated + active user + permission check.
+  - Login protections: IP/email rate limit, account lockout, generic invalid-credentials response.
+  - Password policy + bcrypt cost 12.
+  - Helmet, strict CORS allowlist, secure cookie attributes, validation with Zod.
+  - No secrets/tokens/passwords in logs.
+- **Frontend**
+  - Access token only in memory (never localStorage/sessionStorage).
+  - Axios interceptor auto-refreshes once on 401 and retries.
+  - If refresh fails, force logout + redirect to Login with toast.
+  - Route-level protection + role-based UI action hiding.
+
+### 13.8 Audit Logging Requirements
+
+- Must log:
+  - `LOGIN_SUCCESS`, `LOGIN_FAIL`, `LOGOUT`, `PASSWORD_CHANGE`
+  - `USER_CREATE`, `USER_UPDATE`, `USER_DEACTIVATE`, admin `RESET_PASSWORD`
+  - Protected CREATE/UPDATE/DELETE operations across core modules.
+- Redaction rules:
+  - Never persist raw passwords, password hashes, tokens, secrets.
+  - `before/after` should contain only safe fields.
+
+### 13.9 Error States and UX Rules
+
+- **401 unauthenticated:** redirect/login flow.
+- **403 forbidden:** show Access Denied screen with Go Back action.
+- **422 validation:** inline form errors + snackbar.
+- **429 rate limit:** clear user-friendly message.
+- **Session expiry:** toast + redirect to login.
+- **Forced password change:** block app usage until password changed.
+
+### 13.10 Test Plan and Acceptance Criteria
+
+- Unauthenticated users cannot access protected pages/APIs.
+- Login/logout/refresh works with rotation and session record updates.
+- Refresh/logout fail without CSRF header and succeed with valid CSRF.
+- Rate-limiting and account lockout thresholds behave as specified.
+- RBAC enforces:
+  - ADMIN full access
+  - STAFF blocked from settings/users
+  - VIEWER blocked from all mutate endpoints
+- Security checks:
+  - Helmet active
+  - CORS allowlist enforced
+  - No tokens in local storage
+  - Password hashing + policy valid
+- Audit logs generated for required events.
+
+### 13.11 Rollout Plan (Phase-wise)
+
+- **Phase 1 (implement now)**
+  - Add auth/session backend and secure token flow.
+  - Add users + RBAC + route protection.
+  - Add frontend login/session handling + protected routing.
+  - Add audit logging + basic admin Users/Audit screens.
+- **Phase 2 (document only)**
+  - Forgot password/reset flow with email/OTP.
+  - Email verification.
+  - 2FA.
+  - Multi-tenant business account architecture.
+
+### 13.12 Backward-Safe Migration Notes
+
+- Existing business modules and pages remain intact; they are wrapped by auth checks.
+- API payload format remains consistent (`{ success, data }` / `{ success, message, errors? }`).
+- Environment configuration must include auth secrets and client origin before enabling production rollout.

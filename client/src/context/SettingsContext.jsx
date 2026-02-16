@@ -1,14 +1,22 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import api from '../api/axiosClient.js';
+import { useAuth } from './AuthContext.jsx';
 
 const SettingsContext = createContext(null);
 
 export function SettingsProvider({ children }) {
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [settings, setSettings] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const loadSettings = async () => {
+    if (!isAuthenticated) {
+      setSettings(null);
+      setLoading(false);
+      setError(null);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -22,8 +30,10 @@ export function SettingsProvider({ children }) {
   };
 
   useEffect(() => {
-    loadSettings();
-  }, []);
+    if (!authLoading) {
+      loadSettings();
+    }
+  }, [authLoading, isAuthenticated]);
 
   return (
     <SettingsContext.Provider

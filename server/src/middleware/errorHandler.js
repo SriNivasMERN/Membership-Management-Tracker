@@ -20,7 +20,7 @@ export function errorHandler(err, req, res, next) {
     const errors = Object.fromEntries(
       Object.entries(fieldErrors).map(([key, value]) => [key, value.join(', ')])
     );
-    return res.status(400).json(createErrorResponse('Validation error', errors));
+    return res.status(422).json(createErrorResponse('Validation error', errors));
   }
 
   // Mongoose duplicate key / validation errors
@@ -35,14 +35,18 @@ export function errorHandler(err, req, res, next) {
     for (const [field, detail] of Object.entries(err.errors)) {
       errors[field] = detail.message;
     }
-    return res.status(400).json(createErrorResponse('Validation error', errors));
+    return res.status(422).json(createErrorResponse('Validation error', errors));
   }
 
   const statusCode = err.statusCode || 500;
-  const message = err.message || 'Internal server error';
+  const isServerError = statusCode >= 500;
+  const message =
+    isServerError && process.env.NODE_ENV === 'production'
+      ? 'Internal server error'
+      : err.message || 'Internal server error';
   const errors = err.errors;
 
-  if (statusCode >= 500) {
+  if (isServerError) {
     console.error('Unhandled error:', err);
   }
 

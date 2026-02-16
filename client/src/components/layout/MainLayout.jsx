@@ -23,6 +23,7 @@ import PlaceIcon from '@mui/icons-material/Place';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSettings } from '../../context/SettingsContext.jsx';
+import { useAuth } from '../../context/AuthContext.jsx';
 import fitnessIllustration from '../../assets/fitness-illustration.svg';
 import fdsLogo from '../../assets/fds-logo.svg';
 
@@ -30,9 +31,10 @@ const drawerWidthExpanded = 220;
 const drawerWidthCollapsed = 76;
 
 const navItems = [
-  { label: 'Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
-  { label: 'Members', path: '/members', icon: <PeopleIcon /> },
-  { label: 'Configuration', path: '/configuration', icon: <SettingsIcon /> },
+  { label: 'Dashboard', path: '/dashboard', icon: <DashboardIcon />, roles: ['ADMIN', 'STAFF', 'VIEWER'] },
+  { label: 'Members', path: '/members', icon: <PeopleIcon />, roles: ['ADMIN', 'STAFF', 'VIEWER'] },
+  { label: 'Configuration', path: '/configuration', icon: <SettingsIcon />, roles: ['ADMIN'] },
+  { label: 'Users', path: '/users', icon: <AccountCircleIcon />, roles: ['ADMIN'] },
 ];
 
 function MainLayout({ children, appearance = 'conservative' }) {
@@ -47,6 +49,7 @@ function MainLayout({ children, appearance = 'conservative' }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { settings, loading } = useSettings();
+  const { user, logout } = useAuth();
 
   // Reset logo error when logoUrl changes
   React.useEffect(() => {
@@ -70,6 +73,9 @@ function MainLayout({ children, appearance = 'conservative' }) {
   const defaultMenuImageUrl =
     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQoPeJ--akqtKBkCxznw9SxWHQ0JTADOiX0Hg&s';
   const branchName = loading || !settings ? 'Main Branch' : settings.branchName || 'Main Branch';
+  const visibleNavItems = navItems.filter((item) =>
+    !item.roles || item.roles.includes(user?.role)
+  );
   const appearanceTokens =
     appearance === 'energetic'
       ? {
@@ -394,7 +400,7 @@ function MainLayout({ children, appearance = 'conservative' }) {
         </IconButton>
       </Box>
       <List sx={{ px: 1 }}>
-        {navItems.map((item, index) => (
+        {visibleNavItems.map((item, index) => (
           <motion.div
             key={item.path}
             initial={{ opacity: 0, x: -20 }}
@@ -661,6 +667,10 @@ function MainLayout({ children, appearance = 'conservative' }) {
             <IconButton
               color="inherit"
               aria-label="Logout"
+              onClick={async () => {
+                await logout();
+                navigate('/login', { replace: true });
+              }}
               sx={{
                 color: appearanceTokens.navDefault,
                 background: appearanceTokens.surface,

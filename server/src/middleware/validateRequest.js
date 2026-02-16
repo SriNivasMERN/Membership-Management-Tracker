@@ -11,7 +11,7 @@ export const validateRequest =
       const errors = Object.fromEntries(
         Object.entries(fieldErrors).map(([key, value]) => [key, value.join(', ')])
       );
-      return next(new AppError(400, 'Validation error', errors));
+      return next(new AppError(422, 'Validation error', errors));
     }
 
     // Attach parsed data for downstream handlers (optional convenience)

@@ -3,6 +3,7 @@ import Settings from '../models/Settings.js';
 import { createSuccessResponse } from '../utils/response.js';
 import { AppError } from '../middleware/errorHandler.js';
 import dayjs from 'dayjs';
+import { writeAuditLog } from '../utils/audit.js';
 
 export async function listSlots(req, res) {
   const includeInactive = req.query.includeInactive === 'true';
@@ -23,12 +24,22 @@ export async function getSlot(req, res, next) {
 export async function createSlot(req, res) {
   const body = req.validated?.body || req.body;
   const slot = await Slot.create(body);
+  await writeAuditLog({
+    req,
+    actorUserId: req.auth?.userId,
+    actorRole: req.auth?.role,
+    actionType: 'CREATE',
+    entityType: 'SLOT',
+    entityId: slot._id,
+    after: slot.toObject(),
+  });
   res.status(201).json(createSuccessResponse(slot));
 }
 
 export async function updateSlot(req, res, next) {
   const { id } = req.params;
   const body = req.validated?.body || req.body;
+  const before = await Slot.findById(id);
   const slot = await Slot.findByIdAndUpdate(id, body, {
     new: true,
     runValidators: true,
@@ -36,12 +47,23 @@ export async function updateSlot(req, res, next) {
   if (!slot) {
     return next(new AppError(404, 'Slot not found'));
   }
+  await writeAuditLog({
+    req,
+    actorUserId: req.auth?.userId,
+    actorRole: req.auth?.role,
+    actionType: 'UPDATE',
+    entityType: 'SLOT',
+    entityId: slot._id,
+    before: before?.toObject() || null,
+    after: slot.toObject(),
+  });
   res.json(createSuccessResponse(slot));
 }
 
 export async function toggleSlotActive(req, res, next) {
   const { id } = req.params;
   const { isActive } = req.body;
+  const before = await Slot.findById(id);
   const slot = await Slot.findByIdAndUpdate(
     id,
     { isActive },
@@ -50,6 +72,16 @@ export async function toggleSlotActive(req, res, next) {
   if (!slot) {
     return next(new AppError(404, 'Slot not found'));
   }
+  await writeAuditLog({
+    req,
+    actorUserId: req.auth?.userId,
+    actorRole: req.auth?.role,
+    actionType: 'UPDATE',
+    entityType: 'SLOT',
+    entityId: slot._id,
+    before: before?.toObject() || null,
+    after: slot.toObject(),
+  });
   res.json(createSuccessResponse(slot));
 }
 
@@ -87,6 +119,14 @@ export async function generateMissingSlots(req, res) {
 
   if (slotsToCreate.length) {
     await Slot.insertMany(slotsToCreate);
+    await writeAuditLog({
+      req,
+      actorUserId: req.auth?.userId,
+      actorRole: req.auth?.role,
+      actionType: 'CREATE',
+      entityType: 'SLOT',
+      after: { createdCount: slotsToCreate.length },
+    });
   }
 
   const totalSlots = await Slot.countDocuments();

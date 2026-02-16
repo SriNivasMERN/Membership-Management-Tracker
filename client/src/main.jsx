@@ -5,6 +5,7 @@ import { SnackbarProvider } from 'notistack';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import App from './App.jsx';
+import { AuthProvider } from './context/AuthContext.jsx';
 import { SettingsProvider } from './context/SettingsContext.jsx';
 
 const theme = createTheme({
@@ -212,9 +213,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <CssBaseline />
       <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
         <BrowserRouter>
-          <SettingsProvider>
-            <App />
-          </SettingsProvider>
+          <AuthProvider>
+            <SettingsProvider>
+              <App />
+            </SettingsProvider>
+          </AuthProvider>
         </BrowserRouter>
       </SnackbarProvider>
     </ThemeProvider>

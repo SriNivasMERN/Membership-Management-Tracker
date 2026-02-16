@@ -6,12 +6,13 @@ import Settings from '../models/Settings.js';
 import { createSuccessResponse } from '../utils/response.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { paginationQuerySchema } from '../validation/common.js';
+import { writeAuditLog } from '../utils/audit.js';
 
 export async function listMembers(req, res, next) {
   const parseResult = paginationQuerySchema.safeParse(req.query);
   if (!parseResult.success) {
     return next(
-      new AppError(400, 'Validation error', {
+      new AppError(422, 'Validation error', {
         query: 'Invalid pagination parameters',
       })
     );
@@ -116,6 +117,15 @@ export async function createMember(req, res, next) {
   const body = req.validated?.body || req.body;
   const member = new Member();
   const saved = await buildSnapshotsAndSave(member, body);
+  await writeAuditLog({
+    req,
+    actorUserId: req.auth?.userId,
+    actorRole: req.auth?.role,
+    actionType: 'CREATE',
+    entityType: 'MEMBER',
+    entityId: saved._id,
+    after: saved.toObject(),
+  });
   res.status(201).json(createSuccessResponse(saved));
 }
 
@@ -135,7 +145,18 @@ export async function updateMember(req, res, next) {
   if (!member) {
     return next(new AppError(404, 'Member not found'));
   }
+  const before = member.toObject();
   const saved = await buildSnapshotsAndSave(member, body);
+  await writeAuditLog({
+    req,
+    actorUserId: req.auth?.userId,
+    actorRole: req.auth?.role,
+    actionType: 'UPDATE',
+    entityType: 'MEMBER',
+    entityId: saved._id,
+    before,
+    after: saved.toObject(),
+  });
   res.json(createSuccessResponse(saved));
 }
 
@@ -145,6 +166,15 @@ export async function deleteMember(req, res, next) {
   if (!member) {
     return next(new AppError(404, 'Member not found'));
   }
+  await writeAuditLog({
+    req,
+    actorUserId: req.auth?.userId,
+    actorRole: req.auth?.role,
+    actionType: 'DELETE',
+    entityType: 'MEMBER',
+    entityId: member._id,
+    before: member.toObject(),
+  });
   res.json(createSuccessResponse({ deleted: true }));
 }
 

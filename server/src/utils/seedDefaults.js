@@ -2,6 +2,7 @@ import Settings from '../models/Settings.js';
 import Plan from '../models/Plan.js';
 import Slot from '../models/Slot.js';
 import dayjs from 'dayjs';
+import SystemState from '../models/SystemState.js';
 
 export async function ensureDefaultSettings() {
   let settings = await Settings.findOne();
@@ -9,6 +10,18 @@ export async function ensureDefaultSettings() {
     settings = await Settings.create({});
   }
   return settings;
+}
+
+export async function ensureSystemState() {
+  let state = await SystemState.findOne({ key: 'INITIAL_SETUP' });
+  if (!state) {
+    state = await SystemState.create({
+      key: 'INITIAL_SETUP',
+      setupCompleted: false,
+      setupCompletedAt: null,
+    });
+  }
+  return state;
 }
 
 export async function seedDefaultPlans() {
