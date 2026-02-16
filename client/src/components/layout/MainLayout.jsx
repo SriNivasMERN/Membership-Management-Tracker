@@ -650,22 +650,6 @@ function MainLayout({ children, appearance = 'conservative' }) {
           >
             <IconButton
               color="inherit"
-              aria-label="Profile"
-              sx={{
-                color: appearanceTokens.navDefault,
-                background: appearanceTokens.surface,
-                border: `1px solid ${appearanceTokens.surfaceBorder}`,
-                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.12)',
-                '&:hover': {
-                  background: appearanceTokens.surfaceAlt,
-                  borderColor: 'rgba(0, 0, 0, 0.18)',
-                },
-              }}
-            >
-              <AccountCircleIcon />
-            </IconButton>
-            <IconButton
-              color="inherit"
               aria-label="Logout"
               onClick={async () => {
                 await logout();

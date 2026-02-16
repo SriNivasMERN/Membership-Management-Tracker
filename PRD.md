@@ -25,7 +25,6 @@ This PRD is written to be directly used as a blueprint to implement the full app
   - REST APIs with consistent JSON responses and server-side validation via Zod.
   - Modern SPA with 3 pages: Dashboard, Member, Configuration.
 - **Out of scope**
-  - Authentication/authorization.
   - Multi-tenant support (single business only).
   - Payments integration.
   - Multi-branch/locations.
@@ -36,7 +35,9 @@ This PRD is written to be directly used as a blueprint to implement the full app
 ## 3. User Roles & Use Cases
 
 **Roles:**  
-- **Admin/Staff user** (single role for this version).
+- **ADMIN**
+- **STAFF**
+- **VIEWER**
 
 **Key use cases:**
 
@@ -835,8 +836,7 @@ Single page with tabs:
 
 ### 13.1 Goal and Scope
 
-- **Current state (v1):** The app currently works fully **without login** and all users share the same access.
-- **New state (v2):** Introduce secure authentication, users, and role-based access control (RBAC) in phases, with backward-safe rollout.
+- **Current state:** Secure authentication + role-based access control (RBAC) is active.
 - **Goal:** Protect data and actions by authenticated identity and role, without redesigning existing business workflows/pages.
 
 ### 13.2 In Scope and Out of Scope
@@ -851,7 +851,7 @@ Single page with tabs:
   - Rate limiting and brute-force protection for login.
   - Security hardening: helmet, strict CORS, secure cookies, strict validation.
 - **Out of scope (Phase 2 / future)**
-  - Forgot password / email OTP reset.
+  - Email OTP delivery for reset codes (currently admin-issued reset code flow is implemented).
   - Email verification.
   - 2FA.
   - Multi-tenant business accounts.
@@ -877,7 +877,9 @@ Single page with tabs:
   - Members
   - Configuration
 - New screens:
+  - Setup (one-time owner setup)
   - Login
+  - Reset Password (code-based)
   - Change Password (forced when `mustChangePassword === true`)
   - Users (ADMIN only)
   - Access Denied
@@ -885,7 +887,10 @@ Single page with tabs:
 ### 13.5 API List Impacted
 
 - **New APIs**
+  - `GET /api/auth/setup-status`
+  - `POST /api/auth/setup`
   - `POST /api/auth/login`
+  - `POST /api/auth/reset-password`
   - `POST /api/auth/logout` (CSRF protected)
   - `POST /api/auth/refresh` (CSRF protected)
   - `GET /api/auth/me`
@@ -915,12 +920,17 @@ Single page with tabs:
 - **`auditLogs` collection**
   - `actorUserId`, `actorRole`, `actionType`, `entityType`, `entityId`
   - `before`, `after`, `ipAddress`, `userAgent`, `createdAt`
+- **`passwordResetTokens` collection**
+  - `userId`, `tokenHash`, `expiresAt`, `usedAt`, `createdByUserId`
+  - timestamps
+- **`systemStates` collection**
+  - setup state marker (`key: INITIAL_SETUP`, `setupCompleted`, `setupCompletedAt`)
 
 ### 13.7 Security Controls (Frontend + Backend)
 
 - **Backend**
   - JWT access token (15m) + refresh token (14d).
-  - Refresh token in `httpOnly` secure cookie, rotation, reuse detection, per-session persistence.
+  - Access + refresh tokens in `httpOnly` cookies, refresh rotation, reuse detection, per-session persistence.
   - CSRF double-submit token (`XSRF-TOKEN` cookie + `X-CSRF-Token` header).
   - Role middleware: authenticated + active user + permission check.
   - Login protections: IP/email rate limit, account lockout, generic invalid-credentials response.
@@ -928,7 +938,7 @@ Single page with tabs:
   - Helmet, strict CORS allowlist, secure cookie attributes, validation with Zod.
   - No secrets/tokens/passwords in logs.
 - **Frontend**
-  - Access token only in memory (never localStorage/sessionStorage).
+  - Cookie-based auth (no auth token storage in localStorage/sessionStorage).
   - Axios interceptor auto-refreshes once on 401 and retries.
   - If refresh fails, force logout + redirect to Login with toast.
   - Route-level protection + role-based UI action hiding.
@@ -937,7 +947,8 @@ Single page with tabs:
 
 - Must log:
   - `LOGIN_SUCCESS`, `LOGIN_FAIL`, `LOGOUT`, `PASSWORD_CHANGE`
-  - `USER_CREATE`, `USER_UPDATE`, `USER_DEACTIVATE`, admin `RESET_PASSWORD`
+  - `SETUP_COMPLETE`, `USER_CREATE`, `USER_UPDATE`, `USER_DEACTIVATE`
+  - `PASSWORD_RESET_ISSUED`, `PASSWORD_RESET_COMPLETE`, `TOKEN_REUSE_DETECTED`
   - Protected CREATE/UPDATE/DELETE operations across core modules.
 - Redaction rules:
   - Never persist raw passwords, password hashes, tokens, secrets.
@@ -977,7 +988,7 @@ Single page with tabs:
   - Add frontend login/session handling + protected routing.
   - Add audit logging + basic admin Users/Audit screens.
 - **Phase 2 (document only)**
-  - Forgot password/reset flow with email/OTP.
+  - Reset flow via email/OTP delivery channel.
   - Email verification.
   - 2FA.
   - Multi-tenant business account architecture.
